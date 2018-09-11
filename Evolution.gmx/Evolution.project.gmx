@@ -7,19 +7,58 @@
   <sounds name="sound"/>
   <sprites name="sprites">
     <sprite>sprites\body</sprite>
-    <sprite>sprites\body_red</sprite>
+    <sprite>sprites\creature</sprite>
     <sprite>sprites\food</sprite>
+    <sprite>sprites\bot_dead</sprite>
+    <sprite>sprites\symbol_female</sprite>
+    <sprite>sprites\symbol_male</sprite>
+    <sprite>sprites\color_wheel</sprite>
+    <sprite>sprites\target</sprite>
   </sprites>
-  <backgrounds name="background"/>
-  <paths name="paths"/>
+  <backgrounds name="background">
+    <background>background\background0</background>
+    <background>background\background1</background>
+  </backgrounds>
+  <paths name="paths">
+    <path>paths\path0</path>
+  </paths>
   <scripts name="scripts">
-    <script>scripts\initialize_synapse_array_with_random_weights.gml</script>
-    <script>scripts\mutate_synapse_array.gml</script>
-    <script>scripts\neuron_activation_function.gml</script>
-    <script>scripts\evaluate_neuron_layer.gml</script>
-    <script>scripts\find_candidate_actions.gml</script>
-    <script>scripts\get_highest_priority_action.gml</script>
-    <script>scripts\process_neural_input.gml</script>
+    <scripts name="cognition">
+      <script>scripts\clock_arithmetic.gml</script>
+      <script>scripts\neuron_activation_function.gml</script>
+      <script>scripts\evaluate_neuron_layer.gml</script>
+      <script>scripts\find_candidate_actions.gml</script>
+      <script>scripts\get_highest_priority_action.gml</script>
+      <script>scripts\process_neural_input.gml</script>
+      <script>scripts\calculate_can_eat.gml</script>
+      <script>scripts\calculate_can_mate.gml</script>
+      <script>scripts\calculate_hue_difference.gml</script>
+      <script>scripts\calculate_is_parent_or_child.gml</script>
+      <script>scripts\calculate_is_same_species.gml</script>
+      <script>scripts\create_haploid_chromosome.gml</script>
+    </scripts>
+    <scripts name="reproduction">
+      <script>scripts\give_birth.gml</script>
+      <script>scripts\initialize_synapse_array_with_random_weights.gml</script>
+      <script>scripts\initialize_genetic_dominance_array_with_random_weights.gml</script>
+      <script>scripts\calculate_expressed_genes_for_layer.gml</script>
+      <script>scripts\calculate_expressed_gene_for_baby_size.gml</script>
+      <script>scripts\create_haploid_genes_for_layer.gml</script>
+      <script>scripts\calculate_inherited_baby_bot_size.gml</script>
+      <script>scripts\calculate_x_y_coord.gml</script>
+      <script>scripts\mutate_synapse_and_dominance_layer.gml</script>
+      <script>scripts\mutate_chromosome.gml</script>
+      <script>scripts\mutate_baby_bot_size.gml</script>
+      <script>scripts\copy_chromosome.gml</script>
+      <script>scripts\copy_array.gml</script>
+      <script>scripts\calculate_haploid_chromosomes.gml</script>
+      <script>scripts\copy_and_mutate_moms_chromosomes.gml</script>
+      <script>scripts\reproduce.gml</script>
+      <script>scripts\make_baby.gml</script>
+      <script>scripts\reproduce_asexually.gml</script>
+    </scripts>
+    <script>scripts\initialize_global_constants.gml</script>
+    <script>scripts\set_global_constants_for_difficulty.gml</script>
   </scripts>
   <objects name="objects">
     <object>objects\body_parent</object>
@@ -28,6 +67,9 @@
     <object>objects\food_pellet</object>
     <object>objects\control</object>
     <object>objects\interactive_object</object>
+    <object>objects\chromosome</object>
+    <object>objects\parameters</object>
+    <object>objects\control_genetic_color_wheel</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\main</room>

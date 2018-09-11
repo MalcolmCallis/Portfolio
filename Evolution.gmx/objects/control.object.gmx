@@ -25,10 +25,55 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>alarm[0] = 10
+            <string>initialize_global_constants();
 
-global.mutation_rate = 10
+alarm[0] = room_speed;// food
 alarm[1] = room_speed * 60//reduce mutation rate every minute
+alarm[2] = global.minutes;
+
+self.draw_queue = ds_list_create()
+
+new_births = ds_list_create()
+
+bot_sexes_to_draw = ds_list_create()
+
+for(var i = 0; i &lt; global.starting_food; i++){
+    instance_create(random(room_width),random(room_height),food_pellet)
+}
+
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="2" enumb="2">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>
+if(global.bot_count &gt;= global.max_bots - 10){
+    global.difficulty++;
+    set_global_constants_for_difficulty(global.difficulty);
+}else if(global.bot_count &lt;= global.min_bots &amp;&amp; global.difficulty != 0){
+    global.difficulty--;
+    set_global_constants_for_difficulty(global.difficulty);
+}
+
+alarm[2] = global.minutes;
 </string>
           </argument>
         </arguments>
@@ -51,7 +96,7 @@ alarm[1] = room_speed * 60//reduce mutation rate every minute
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>global.mutation_rate *= 0.9
+            <string>global.mutation_rate *= 0.99
 alarm[1] = room_speed * 60
 </string>
           </argument>
@@ -75,13 +120,208 @@ alarm[1] = room_speed * 60
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if(instance_number(food_pellet) &lt; 200){
+            <string>for(var i = 0; i &lt; global.food_per_second &amp;&amp; instance_number(food_pellet) &lt; global.max_food; i++){
     instance_create(random(room_width),random(room_height),food_pellet)
 }
-if(instance_number(bot) &lt; 50){
-    instance_create(random(room_width),random(room_height),bot)
+
+alarm[0] = room_speed 
+
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="3" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>global.bot_count = instance_number(bot)
+global.food_count = instance_number(food_pellet)
+
+var population_by_species = global.population_by_species;
+
+ds_map_clear(population_by_species)
+
+//draw bots
+with(bot){
+    var draw_this = undefined;
+    draw_this[0] = self.hue;
+    draw_this[1] = self.species;
+    draw_this[2] = self.generation;
+    ds_list_add(other.draw_queue,draw_this);    
 }
-alarm[0] = 2
+
+//find longest generation
+var longest_generation = 0;
+for(var i = 0; i &lt; ds_list_size(draw_queue);i++){
+    var draw_this = ds_list_find_value(draw_queue,i);
+    var hue = draw_this[0];
+    var species = draw_this[1];
+    var current_population = ds_map_find_value(population_by_species,species);
+    if(is_undefined(current_population)){
+        ds_map_add(population_by_species,species,1);
+    } else {
+        ds_map_replace(population_by_species,species,current_population + 1);
+    }
+    
+    var generation = draw_this[2];
+    if(generation &gt; longest_generation){
+        longest_generation = generation;
+    }
+}
+
+ds_list_clear(draw_queue)
+global.longest_generation = longest_generation;
+global.population_by_species = population_by_species;
+
+
+if(global.difficulty == 0){
+    if(global.bot_count &lt; global.min_bots){
+        with(instance_create(random(room_width),random(room_height),parameters)){
+            self.species = global.species_id;
+            
+            self.hue = irandom(global.hue_shade_count);
+        instance_change(bot,true);
+        }
+        global.species_id++;
+    }
+
+}
+
+var size, key, i;
+size = ds_map_size(population_by_species);
+global.species_count = size;
+var largest_population_species = 0;
+key = ds_map_find_first(population_by_species);
+for (i = 0; i &lt; size; i++;){
+    var species_population = ds_map_find_value(population_by_species,key);
+    if(species_population &gt; largest_population_species){
+        largest_population_species = species_population;
+    }
+    if(species_population &gt; global.max_bots / 2.0){
+    //divide species into two species to ensure diversity
+        var new_species_id = global.species_id;
+        global.species_id++;
+        var new_hue = irandom(global.hue_shade_count);
+        with(bot){
+            if(self.species == key &amp;&amp; random(2) &lt; 1){
+                self.species = new_species_id;
+                self.hue = new_hue;
+            }        
+        }   
+    }
+
+
+   key = ds_map_find_next(population_by_species, key);
+}
+global.largest_population_species = largest_population_species;
+
+global.proportion_of_births_from_sexual_reproduction = global.sexual_births / (global.sexual_births + global.asexual_births);
+
+
+if(instance_number(player) &lt; 1){
+    instance_create(random(room_width),random(room_height),player)
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="8" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>
+
+births = ds_list_size(new_births)
+
+for(i = 0; i &lt; births; i++){
+    birth_place = ds_list_find_value(new_births,i)
+    effect_create_above(ef_firework,birth_place[0],birth_place[1],2,make_colour_rgb(255,0,255))
+}
+ds_list_clear(new_births)
+
+
+with(bot){
+
+    var drawer = other
+    var bot_to_draw = self
+    var sprite = symbol_male;
+    if(bot_to_draw.female){
+        sprite = symbol_female;
+    }
+    var thing_to_draw = undefined;
+    var width = sprite_width;
+    
+    thing_to_draw[0] = sprite;
+    thing_to_draw[1] = bot_to_draw.x;
+    thing_to_draw[2] = bot_to_draw.y
+    thing_to_draw[3] = width
+    
+    ds_list_add(drawer.bot_sexes_to_draw,thing_to_draw)
+
+}
+
+for(var i = 0; i &lt; ds_list_size(bot_sexes_to_draw); i++){
+    var thing_to_draw = ds_list_find_value(bot_sexes_to_draw,i);
+    var sprite = thing_to_draw[0]
+    var draw_x = thing_to_draw[1]
+    var draw_y = thing_to_draw[2]
+    var width = thing_to_draw[3]
+    draw_sprite_stretched(sprite,0,draw_x - width /2.0,draw_y - (width * 1.5),width,width)
+}
+ds_list_clear(bot_sexes_to_draw)
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="9" enumb="13">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>global.food_per_second = get_integer("Food per second: ",global.food_per_second)
 </string>
           </argument>
         </arguments>
